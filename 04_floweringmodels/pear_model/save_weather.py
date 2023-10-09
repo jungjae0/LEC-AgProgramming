@@ -53,7 +53,7 @@ def xml2df(xml_content):
 
 
 def save_weather_data(output_dir, serviceKey, stations, years):
-    raw_info = pd.read_csv('./input/농업기상_관측정보.csv', encoding='cp949')
+    raw_info = pd.read_csv('../input/농업기상_관측정보.csv', encoding='cp949')
     station_info = raw_info[raw_info['지점명'].isin(stations)]
 
     for idx, row in station_info.iterrows():
@@ -75,18 +75,38 @@ def save_weather_data(output_dir, serviceKey, stations, years):
             station_data = pd.concat([year_data, station_data], ignore_index=True)
         station_data.to_csv(os.path.join(output_dir, f'agweather/{station_name}.csv'), index=False, encoding='cp949')
 
-
-def main():
-    output_dir = './output'
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
+def save_ag_weather(output_dir):
     serviceKey = '8rRt9OVUEJmBrSsNYKceGV5IXGTa0FdqQmFqfJBECkkTZ8kAFrklLdOAr5WusKLTi2PMVy06WvibIqQozsblJQ=='
     stations = ['이천시 장호원', '천안시 직산읍', '영천시 금호읍', '완주군 반교리',
                 '사천시 송포동', '상주시 외서면', '나주시 금천면', '울주군 서생면']
     years = [2017, 2018, 2019, 2020]
 
     save_weather_data(output_dir, serviceKey, stations, years)
+
+def save_aws_weather(output_dir):
+    station_info = pd.read_csv("../input/종관기상_관측지점.csv", encoding='utf-8')
+
+    for idx, row in tqdm.tqdm(station_info.iterrows()):
+        code = row['지점코드']
+        name = row['지점명']
+        file_name = os.path.join(output_dir, f"{name}.csv")
+        if not os.path.exists(file_name):
+            url = f"https://api.taegon.kr/stations/{code}/?sy=2002&ey=2022&format=csv"
+            df = pd.read_csv(url, sep='\\s*,\\s*', engine="python")
+            df.columns = [col.strip() for col in df.columns]
+            df = df.rename(columns={'tavg': 'temp', 'tmax': 'max_temp', 'tmin': 'min_temp'})
+            df['date'] = pd.to_datetime(dict(year=df.year, month=df.month, day=df.day))
+            df = df[['date', 'year', 'month', 'day', 'temp', 'max_temp', 'min_temp']]
+
+            df.to_csv(file_name, index=False, encoding='utf-8')
+
+def main():
+    output_dir = '../output/weather'
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    # save_ag_weather(output_dir)
+    # save_aws_weather(output_dir)
 
 if __name__ == '__main__':
     main()
