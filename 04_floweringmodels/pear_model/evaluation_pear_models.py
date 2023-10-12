@@ -98,11 +98,6 @@ def add_dvr_col(df):
         elif 14 <= hour <= 23:
             df[f'temp_{hour}시'] = (df['max_temp'] - df['min_temp'].shift(-1)) * (np.sin((28 - hour) * 3.14 / 30) ** 2) + df['min_temp'].shift(-1)
 
-        # 배 만개기 예측식 표
-        # df[f'DVR1_{hour}시'] = df[f'temp_{hour}시'].apply(spontaneous_rest) # 자발휴면기-DVR1
-        # df[f'DVR2_{hour}시'] = df[f'temp_{hour}시'].apply(imposed_rest) # 타발휴면기-DVR2
-
-
         # 기온 상승에 따른 ‘신고’ 배나무의 만개일 변동 예측(Han 2010)
         df[f'DVR1_{hour}시'] = df[f'temp_{hour}시'].apply(get_dvr1) # 자발휴면기-DVR1
         df[f'DVR2_{hour}시'] = df[f'temp_{hour}시'].apply(get_dvr2) # 타발휴면기-DVR2
@@ -110,6 +105,10 @@ def add_dvr_col(df):
     df = df.drop(columns=[col for col in df.columns if 'temp_' in col])
     return df
 
+
+# 배 만개기 예측식 표
+# df[f'DVR1_{hour}시'] = df[f'temp_{hour}시'].apply(spontaneous_rest) # 자발휴면기-DVR1
+# df[f'DVR2_{hour}시'] = df[f'temp_{hour}시'].apply(imposed_rest) # 타발휴면기-DVR2
 
 
 def modified_dvr_model(data):
@@ -119,15 +118,15 @@ def modified_dvr_model(data):
     expected_full_bloom_df = pd.DataFrame()
     for year in data['season_year'].unique():
         df = data[data['season_year'] == year]
-        # col_dvr1 = [col for col in df.columns if 'DVR1' in col]
-        # df['DVR1'] = df[col_dvr1].sum(axis=1)
-        # df['DVS1'] = df['DVR1'].cumsum()
-        # df = df[df['DVS1'] >= 1] # 내생휴면 해제
-        #
-        # df['DVS1'] = df['DVR1'].cumsum()
-        # df = df[df['DVS1'] >= 2] # 저온감응기(내생휴면과 강제휴면이 겹치는 시기) 종료 이후
+        col_dvr1 = [col for col in df.columns if 'DVR1' in col]
+        df['DVR1'] = df[col_dvr1].sum(axis=1)
+        df['DVS1'] = df['DVR1'].cumsum()
+        df = df[df['DVS1'] >= 1] # 내생휴면 해제
 
-        df = df[(df['date'] >= pd.to_datetime(f'{year}-02-15'))] # 내생휴면 해제 종료일 설정
+        df['DVS1'] = df['DVR1'].cumsum()
+        df = df[df['DVS1'] >= 2] # 저온감응기(내생휴면과 강제휴면이 겹치는 시기) 종료 이후
+
+        # df = df[(df['date'] >= pd.to_datetime(f'{year}-02-15'))] # 내생휴면 해제 종료일 설정
         col_dvr2 = [col for col in df.columns if 'DVR2' in col]
         df['DVR2'] = df[col_dvr2].sum(axis=1) # 만개기에 도달할 때까지 필요한 발육속도
         df['DVS2'] = df['DVR2'].cumsum()
@@ -265,21 +264,31 @@ def cd_model(data):
 
     return date_df
 
+def naju(input_dir):
+    df = pd.read_csv(os.path.join(input_dir, '나주시금천면.csv'), encoding='cp949')
+    df['date'] = pd.to_datetime(df['date'])
+    # df = df[(df['date'] >= pd.to_datetime('2017-10-01')) & (df['date'] <= pd.to_datetime('2020-06-30'))]
+    df['season_year'] = df['year']
+    df.loc[(df["month"] >= 10), "season_year"] = df["year"] + 1
+    # df = df[~df['month'].isin([7, 8, 9])]
+    df = df.sort_values(by=['year', 'date'], ascending=[True, True])
 
-def main():
-    input_dir = '../output/weather'
+    dvr = dvr_model(df)
+    mdvr = modified_dvr_model(df)
+    cd = cd_model(df)
 
+    dates = pd.merge(dvr, mdvr, on='year', how='inner')
+    dates = pd.merge(dates, cd, on='year', how='inner')
+    print(dates)
+
+def all(input_dir):
     weather_filenames = os.listdir(input_dir)
 
     all_date = pd.DataFrame()
     for filename in tqdm.tqdm(weather_filenames):
-
-
         df = pd.read_csv(os.path.join(input_dir, filename), encoding='cp949')
 
-        # df = pd.read_csv(os.path.join(input_dir, '나주시금천면.csv'), encoding='cp949')
         df['date'] = pd.to_datetime(df['date'])
-        # df = df[(df['date'] >= pd.to_datetime('2017-10-01')) & (df['date'] <= pd.to_datetime('2020-06-30'))]
         df['season_year'] = df['year']
         df.loc[(df["month"] >= 10), "season_year"] = df["year"] + 1
         df = df[~df['month'].isin([7, 8, 9])]
@@ -296,6 +305,13 @@ def main():
 
     print(all_date)
     all_date.to_csv('../output/result.csv', index=False, encoding='utf-8')
+
+def main():
+    input_dir = '../output/weather'
+
+    all(input_dir)
+
+
 
 if __name__ == '__main__':
     main()
