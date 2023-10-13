@@ -53,7 +53,7 @@ def xml2df(xml_content):
 
 
 def save_weather_data(output_dir, serviceKey, stations, years):
-    raw_info = pd.read_csv('../input/농업기상_관측정보.csv', encoding='cp949')
+    raw_info = pd.read_csv('input/농업기상_관측정보.csv', encoding='cp949')
     station_info = raw_info[raw_info['지점명'].isin(stations)]
 
     for idx, row in station_info.iterrows():
@@ -84,7 +84,7 @@ def save_ag_weather(output_dir):
     save_weather_data(output_dir, serviceKey, stations, years)
 
 def save_aws_weather(output_dir):
-    station_info = pd.read_csv("../input/종관기상_관측지점.csv", encoding='utf-8')
+    station_info = pd.read_csv("input/종관기상_관측지점.csv", encoding='utf-8')
 
     for idx, row in tqdm.tqdm(station_info.iterrows(), total=len(station_info)):
         code = row['지점코드']
@@ -101,7 +101,7 @@ def save_aws_weather(output_dir):
             df.to_csv(file_name, index=False, encoding='utf-8')
 
 def main():
-    output_dir = '../output/weather'
+    output_dir = 'output/weather'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
