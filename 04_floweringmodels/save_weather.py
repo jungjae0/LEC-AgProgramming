@@ -86,12 +86,12 @@ def save_ag_weather(output_dir):
 def save_aws_weather(output_dir):
     station_info = pd.read_csv("../input/종관기상_관측지점.csv", encoding='utf-8')
 
-    for idx, row in tqdm.tqdm(station_info.iterrows()):
+    for idx, row in tqdm.tqdm(station_info.iterrows(), total=len(station_info)):
         code = row['지점코드']
         name = row['지점명']
         file_name = os.path.join(output_dir, f"{name}.csv")
         if not os.path.exists(file_name):
-            url = f"https://api.taegon.kr/stations/{code}/?sy=2002&ey=2022&format=csv"
+            url = f"https://api.taegon.kr/stations/{code}/?sy=2000&ey=2022&format=csv"
             df = pd.read_csv(url, sep='\\s*,\\s*', engine="python")
             df.columns = [col.strip() for col in df.columns]
             df = df.rename(columns={'tavg': 'temp', 'tmax': 'max_temp', 'tmin': 'min_temp'})
@@ -106,7 +106,7 @@ def main():
         os.makedirs(output_dir)
 
     # save_ag_weather(output_dir)
-    # save_aws_weather(output_dir)
+    save_aws_weather(output_dir)
 
 if __name__ == '__main__':
     main()
