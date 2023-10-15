@@ -3,6 +3,7 @@ import re
 import numpy as np
 import pandas as pd
 import tqdm
+pd.set_option('mode.chained_assignment', None)
 
 # -------정시의 기온 예측
 def predict_time_temp(df):
@@ -22,13 +23,10 @@ def predict_time_temp(df):
 # -------GDH 모델
 def cal_gdh_value(x):
     gdh = 0
-
-    if 4 < x < 5:
+    if 4 < x < 25:
         gdh = 10.5 * (1 + np.cos(np.pi + np.pi * ((x - 4) / 21)))
-
     elif 25 < x < 36:
         gdh = 21 * (1 + np.cos((np.pi / 2) + (np.pi / 2) * ((x - 4) / 25)))
-
     return gdh
 
 def predict_time_gdh(df):
@@ -36,7 +34,6 @@ def predict_time_gdh(df):
 
     for hour in range(0, 24):
         df[f'gdh_{hour}시'] = df[f'temp_{hour}시'].apply(cal_gdh_value)
-
 
     col_gdh = [col for col in df.columns if 'gdh_' in col]
     df = df.melt(id_vars=id_vars, value_vars=col_gdh, var_name="time", value_name='gdh')
@@ -49,7 +46,6 @@ def gdh_model(df):
     # after data 필요
     gdh_values = [1395, 1674, 2790, 5579]
 
-
     after_df = pd.DataFrame()
 
     for year in df['year'].unique():
@@ -60,21 +56,35 @@ def gdh_model(df):
         after_df = pd.concat([after_df, year_df], ignore_index=True)
 
     # after = pd.concat(after_df)
-
-
-
     after = predict_time_gdh(after_df)
     after['cumsum_gdh'] = after.groupby('year')['gdh'].cumsum()
 
     dates_list = []
 
     for gdh_value in gdh_values:
-        dormancy_dates = after[after['cumsum_gdh'] <= gdh_value].groupby('year')['date'].last().reset_index()
+        dormancy_dates = after[after['cumsum_gdh'] >= gdh_value].groupby('year')['date'].first().reset_index()
         dormancy_dates = dormancy_dates.rename(columns={'date': f'gdh_{gdh_value}'})
         dates_list.append(dormancy_dates)
 
     gdh_date = pd.concat(dates_list, axis=1)
     gdh_date = gdh_date.loc[:, ~gdh_date.columns.duplicated()]
+    # gdh_values = [1395, 1674, 2790, 5579]
+    #
+    # after_df = pd.DataFrame()
+    # dates_list = []
+    # for year in df['year'].unique():
+    #     year_df = df[df['year'] == year]
+    #     year_df = year_df[year_df['date'] >= pd.to_datetime(f'{year}-02-20')]
+    #
+    #     year_df = predict_time_gdh(year_df)
+    #     year_df['cumsum_gdh'] = year_df['gdh'].cumsum()
+    #     for gdh_value in gdh_values:
+    #         dormancy_dates = year_df[year_df['cumsum_gdh'] >= gdh_value].groupby('year')['date'].first().reset_index()
+    #         dormancy_dates = dormancy_dates.rename(columns={'date': f'gdh_{gdh_value}'})
+    #         dates_list.append(dormancy_dates)
+    #
+    # gdh_date = pd.concat(dates_list, axis=1)
+    # gdh_date = gdh_date.loc[:, ~gdh_date.columns.duplicated()]
 
     return gdh_date
 
@@ -159,17 +169,16 @@ def add_chill_unit(x):
     elif 18 <= x:
         return -1.0
 
-
 def predict_chill_unit(df):
     for hour in range(0, 24):
         df[f'chill_{hour}시'] = df[f'temp_{hour}시'].apply(add_chill_unit)
 
     col_chill = [col for col in df.columns if 'chill_' in col]
-    df['date_cumsum_chill'] = df[col_chill].sum(axis=1)#.cumsum()
+    df['date_cumsum_chill'] = df[col_chill].sum(axis=1) # 일별 저온요구도
     df = df.drop(columns=col_chill)
     return df
 
-def utah_model(df):
+def utah_model(df,cu_MAX):
     df = predict_chill_unit(df)
 
     # 휴면개시일
@@ -190,7 +199,7 @@ def utah_model(df):
     after = predict_chill_unit(after)
     after['chill_unit_cumsum'] = after.groupby('season_year')['date_cumsum_chill'].cumsum()
 
-    stop_dormancy_dates = after[after['chill_unit_cumsum'] >= 800].groupby('season_year')['date'].first().reset_index()
+    stop_dormancy_dates = after[after['chill_unit_cumsum'] >= cu_MAX].groupby('season_year')['date'].first().reset_index()
     dormancy_dates = pd.merge(dormancy_dates, stop_dormancy_dates, on='season_year', how='inner')
     dormancy_dates = dormancy_dates.rename(columns={'season_year': 'year',
                                                     'date_x': 'start_dormancy_date',
@@ -199,13 +208,14 @@ def utah_model(df):
     return dormancy_dates
 
 def full_bloom_dates(df):
+    cu_MAX = 800
     df = predict_time_temp(df)
     df['date'] = pd.to_datetime(df['date'])
 
 
     cd_dates = cd_model(df)
     gdh_dates = gdh_model(df)
-    dormancy_dates = utah_model(df)
+    dormancy_dates = utah_model(df, cu_MAX)
 
     all_dates = pd.merge(cd_dates, gdh_dates, on='year', how='inner')
     all_dates = pd.merge(all_dates, dormancy_dates, on='year', how='inner')
