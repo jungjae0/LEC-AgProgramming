@@ -7,8 +7,8 @@
 
 #### 과수별 개화 모델
 
-- '신고' 배 > [pear_model](04_floweringmodels/pear_model)
-- '후지' 사과 > [apple_model](04_floweringmodels/apple_model)
+- '신고' 배 > [pear_model](pear_model)
+- '후지' 사과 > [apple_model](apple_model)
 
 #### 만개일 예측 결과 시각화
 
