@@ -1,8 +1,3 @@
-* 자발휴면기 발육속도
-* 타발휴면기 발육속도
-* 생육단계별 만개일까지의 소요일수
-
-
 ### 신고 배의 지역별 개화예측모델
 * 경과기온 양상에 따른 신고 배의 지역별 개화예측모델 평가
 
@@ -11,11 +6,21 @@
 - 발육속도(development rate, DVR): 과수가 일평균기온에 영향을 받아 만개기에 다가가는 속도
 - 발육단계(development stage, DVS): 누적되는 DVR의 누적값으로, DVS 값이 100에 도달하면 예상만개기
 
-![image](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/89aecd4c-583e-469c-988d-db4423b1e920)
-
-A = 107.94 / B = 0.9 / t = 일평균기온(5°C 이상)
+![DVR](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/3b6dcbf4-2afb-4ccd-949e-95cf2846fc0a)
 
 2. Han et al.(2010)이 제시한 발육속도모델(modified DVR model, mDVR model)
+
+- 전날의 최고기온과 당일 최저기온으로 시간별 기온을 추정
+
+![predict_time_temp](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/7520e830-7e8d-45ea-be90-7f9605696ae3)
+
+- DVR1
+
+![DVR1](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/6f91e3fa-fe5a-48a6-a617-8fb8179a2c6d)
+
+- DVR2
+
+![DVR2](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/daf0c6ce-5dc6-420d-a80a-263ce6bd3cfa)
 
 - 저온감응기의 종료 이후 만개기에 도달할 때까지 필요한 발육속도(DVR2)를 계산해 누적했을 때 발육지수(∑DVR2)가 0.9593에 도달하면 예상 만개기
     * 내생휴면 해제일: 누적발육지수(∑DVR1) == 1
@@ -23,22 +28,9 @@ A = 107.94 / B = 0.9 / t = 일평균기온(5°C 이상)
     * 저온감응기의 종료: 내생휴면과 강제휴면이 겹치는 시기 > 누적발육지수(∑DVR1) == 2
     * 예상만개기: 저온감응기 이후 만개기에 도달할 때까지 필요한 발육속도(DVR2)를 계산하여 누적했을 때 발육지수(∑DVR2)가 0.9593에 도달
 
-- 전날의 최고기온과 당일 최저기온으로 시간별 기온을 추정
-
-![image](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/670f5fd5-a2f0-4867-95b8-c0d764db33e7)
-
-- DVR1 > 발육속도 모델을 이용한 배 ‘신고’ 자발휴면타파시기 추정(Han, 2008)
-
-![image](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/41ae768d-57a6-49b2-981d-616757a3bd35)
-
-- DVR2 > Prediction of full bloom date of pear using air temperature.(Sugiura, 1999)
-    * 0°C보다 낮으면 발육속도 0으로 설정
-![image](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/154b6372-54ab-4fbb-9741-bd526f2657f6)
+![mDVR](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/4bbc49ad-f643-424b-965d-429098ed2623)
 
 
-- 배 '신고' 만개일 예측을 위한 시간발육속도모델(배 만개기 예측식 표)
-
-![image](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/74fba1d4-03c3-4546-86aa-93b8ff1a1454)
 
 3. Cesaraccio et al.(2004)의 휴면시계모델 (chill days model, CDmodel)
 
@@ -46,11 +38,14 @@ A = 107.94 / B = 0.9 / t = 일평균기온(5°C 이상)
     * 내생휴면해제 이전: 냉각량(chill unit)
     * 내생휴면해제 이후: 가온량(heat unit)
 
+![chill_anti_chill_day](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/4db35ca2-6d3c-4220-a0d2-2c0c6c8ae8c5)
+
 - 내생휴면해제: 누적 냉각량이 저온요구도(Cr)에 도달
     * 내생휴면 해제 종료일(2월 15일) 설정
 - 강제휴면타파(발아): 누적 가온량이 저온요구도(Cr)에 도달
 - 예상 만개일: 신고 배의 고온요구도(Hr)만큼 추가적인 가온량 누적
-Tc = 5.4℃ / Cr = -86.4 / Hr = 272
+
+![CD](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/4bc091af-41cd-4fda-8799-6e8cf7e6fb0c)
 
 ### 휴면타파시기
 
@@ -65,12 +60,8 @@ Tc = 5.4℃ / Cr = -86.4 / Hr = 272
   * 사과(500~800CU), 배(1,000~1,200CU), 복숭아(800~1,000CU) 내외
 * 유타모델
 
-* 수확 적기는 만개 후 성숙기까지의 일수가 160일, 적산온도는 약 3,480±50℃ 정도가 알맞다
-* 과실비대의 적온은 16∼18℃이며 적산온도는 1,650∼2,600℃
+![chill_unit](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/c4bfaefe-c86a-4274-95bf-cef401c6598d)
 
-### 모델 결과 시각화
-* 참고
-  * https://www.nippon.com/en/japan-data/h01564/
-  * https://highparknaturecentre.com/cherry-blossom-tracking/
-  * https://www.researchgate.net/publication/360118309_Estimating_Heat_Requirement_for_Flowering_in_Peach_Germplasm/figures?lo=1
+![dormancy](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/9400b26d-915c-451a-8f9a-b96fbc511fe4)
 
+* 수확 적기는 만개 후 성숙기까지의 일수가 160일
