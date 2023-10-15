@@ -34,8 +34,33 @@ def add_date_temp(weather_dir, models_result_file, output_filename):
 
         result = pd.concat([result, pred_date], ignore_index=True)
 
-    result.to_csv(output_filename, index=False, encoding='utf-8')
+    return result
 
+
+def add_mean_date(models_result_file, output_filename):
+    pred = pd.read_csv(models_result_file, encoding='utf-8')
+
+    # cols = pred.columns
+    # drop_cols = ['date', 'start_dormancy_date', 'stop_dormancy_date', '지역', 'year']
+    # models = list(set(cols) - set(drop_cols))
+    models = ['CD', 'gdh_5579']
+    for model in models:
+        pred[f'{model}'] = pd.to_datetime(pred[f'{model}']).dt.strftime('%j').astype(float)
+
+    pred['mean_j'] = pred[models].mean(axis=1).astype(int)
+    pred['cul_j'] = pred['mean_j'] + 160
+
+
+    pred['mean_j'] = pred['year'].astype(str) + '' + pred['mean_j'].astype(str)
+    pred['mean_j'] = pd.to_datetime(pred['mean_j'], format='%Y%j', errors='coerce')
+    pred['mean_date'] = pred['mean_j'].dt.strftime('%Y-%m-%d')
+
+
+    pred['cul_j'] = pred['year'].astype(str) + '' + pred['cul_j'].astype(str)
+    pred['cul_j'] = pd.to_datetime(pred['cul_j'], format='%Y%j', errors='coerce')
+    pred['cul_date'] = pred['cul_j'].dt.strftime('%Y-%m-%d')
+
+    return pred[['year', 'mean_date', 'cul_date', '지역']]
 
 def main():
     name = 'apple'
@@ -43,9 +68,14 @@ def main():
     output_dir = './output'
     weather_dir = os.path.join(output_dir, 'weather')
     models_result_file = os.path.join(output_dir, f'{name}_result.csv')
-    output_filename = os.path.join(output_dir, f'{name}_result_temp.csv')
+    output_filename = os.path.join(output_dir, f'{name}_analysis.csv')
 
-    add_date_temp(weather_dir, models_result_file, output_filename)
+    add_temp = add_date_temp(weather_dir, models_result_file, output_filename)
+    mean_date = add_mean_date(models_result_file, output_filename)
+
+    save = pd.merge(add_temp, mean_date, on=['year', '지역'], how='inner')
+
+    save.to_csv(output_filename, index=False, encoding='utf-8')
 
 if __name__ == '__main__':
     main()
