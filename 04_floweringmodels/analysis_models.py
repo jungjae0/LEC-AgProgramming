@@ -162,8 +162,7 @@ def draw_date_cr_line(df):
     # df[date_columns] = df[date_columns].applymap(pd.to_datetime)
     start_date = pd.to_datetime(df['start_dormancy_date'].values[0])
     stop_date = pd.to_datetime(df['stop_dormancy_date'].values[0])
-    # print(stop_date, start_date)
-    weather = pd.read_csv(f'../output/weather/{station}.csv', encoding='utf-8')
+    weather = pd.read_csv(f'./output/weather/{station}.csv', encoding='utf-8')
     weather['season_year'] = weather["year"]
     weather.loc[weather["month"] > 9, "season_year"] = weather["year"] + 1
     weather['date'] = pd.to_datetime(weather['date'])
@@ -171,6 +170,7 @@ def draw_date_cr_line(df):
     weather = add_predict_temp(weather)
     weather['date_cumsum_chill'] = weather['date_cumsum_chill'].cumsum()
     cr1600 = pd.to_datetime(weather[weather['date_cumsum_chill'] >= 1600]['date'].values[0])#.reset_index()
+
 
     chill_unit = weather[(weather['date'] <= cr1600) & (weather['date'] >= start_date)]
     chill_unit['jday'] = pd.to_datetime(chill_unit['date']).dt.strftime('%j').astype(float)
@@ -195,11 +195,11 @@ def draw_date_cr_line(df):
     plt.xticks(rotation=45)
     plt.tight_layout()
 
-    plt.savefig('./figs/date_cu.png')
+    plt.show()
 
 
 def main():
-    df = pd.read_csv('../output/analysis_data.csv', encoding='utf-8')
+    df = pd.read_csv('./output/pear_analysis.csv', encoding='utf-8')
     date_columns = ['DVR', 'mDVR', 'CD']
 
     for column in date_columns:
@@ -214,7 +214,7 @@ def main():
     # draw_date_temp_line(df)
 
     # line plot > 휴면타파시기-저온축적(평년 + 선택) https://fruit.nihhs.go.kr/pear/dormancy/dormancyInfo.do
-    # draw_date_cr_line(df)
+    draw_date_cr_line(df)
     
     # 만개일 범위 표 > 세 개 모델의 최대/최소 값을 범위로 https://www.nippon.com/en/japan-data/h01564/
     # table_date_station(df)
