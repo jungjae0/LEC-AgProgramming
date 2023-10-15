@@ -1,14 +1,14 @@
 ### 개화 모델 구현 및 시각화
 
 #### 입력 자료 수집
-[save_weather.py](04_floweringmodels/save_weather.py)
+[save_weather.py](save_weather.py)
 - 전국 74개 지점의 2000-2022년 일별 기상데이터 수집
 
 
 #### 과수별 개화 모델
 
-- '신고' 배 > [pear_model](04_floweringmodels/pear_model)
-- '후지' 사과 > [apple_model](04_floweringmodels/apple_model)
+- '신고' 배 > [pear_model](pear_model)
+- '후지' 사과 > [apple_model](apple_model)
 
 #### 만개일 예측 결과 시각화
 
