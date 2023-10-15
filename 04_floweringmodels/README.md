@@ -1,7 +1,7 @@
 ### 개화 모델 구현 및 시각화
 
 #### 입력 자료 수집
-[save_weather.py](04_floweringmodels/save_weather.py)
+[save_weather.py](save_weather.py)
 - 전국 74개 지점의 2000-2022년 일별 기상데이터 수집
 
 
