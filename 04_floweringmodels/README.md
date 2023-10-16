@@ -12,42 +12,51 @@
 
 #### 만개일 예측 결과 시각화
 
+- 시각화 데이터 생성 > [preprocess_data.py](preprocess_data.py)
+- 시각화 코드 > [analysis.py](analysis.py)
+- GUI APP > [app.py](app.py)
+
 1. 일평균 기온 변화 추이: 평년 vs. 선택연도
 
-![common_current_temp](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/cd63ff58-7dd4-43f5-bd60-4494f11f1cd9)
+![평년현재기온](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/be9a569f-552d-4b06-93a0-b2e7f01ca7af)
 
 
 2. 일평균 기온 변화 추이: 3개년
 
-![3year_temp](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/9c4dc0ba-4f08-4ab2-9249-d2bde09cdd8f)
+![3년기온](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/f5abd7cd-00f8-4069-a2c0-fcd610e23850)
 
 
 3. 저온축적량과 휴면타파시기
 
-![dromancy_line](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/607d8469-968b-43d7-8640-8e583bf98223)
+![휴면타파시기](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/19ef458d-99b2-4226-99a6-a05a65a2017b)
 
 
-4. 만개월의 평균 기온과 만개일 변화 추이
+4. 만개일 예측 결과
 
-![date_tavg_line](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/f513c245-c01f-40b5-aa66-287a3f913b97)
-
-
-5. 만개일의 일평균 기온과 만개일 변화 추이
+![예측결과](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/620f98d2-5838-4c8b-8cc3-a0c6b2dd2bcf)
 
 
-![date_temp_line](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/ccf8bcd9-0107-4d36-aaef-0af4714dedba)
+5. 만개월의 평균 기온과 만개일 변화 추이
+
+![만개월기온만개일](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/9a96bc47-a211-4db6-bb06-3fcf23786456)
 
 
-6. 전국 만개일과 만개월 평균 기온 지도
+6. 만개일의 일평균 기온과 만개일 변화 추이
 
-![3year_temp](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/9c4dc0ba-4f08-4ab2-9249-d2bde09cdd8f)
-
-
-7. 전국 만개일 예측 범위
-
-![date_range_table](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/3f7db1df-82bc-489a-a0d6-1f45e21a41ab)
+![만개일기온만개일](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/8cd6772f-e0d3-4b86-b148-327301488bf0)
 
 
-8. 선택 지역 만개일 변화 추이
+7. 전국 만개일과 만개월 평균 기온 지도
 
-![station_date_line](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/2efb205e-51ef-4b64-b54b-b3400d527067)
+![지도](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/8cc7092c-beb1-4fac-83ba-7ba17571f11f)
+
+
+8. 전국 만개일 예측 범위
+
+![범위](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/ac34b720-725f-46ca-bce4-0f5ef948eee3)
+
+
+9. 여러 지역의 만개일 변화 추이
+
+![지역들간만개일](https://github.com/jungjae0/LEC-AgProgramming/assets/93760723/4b6ff032-d8fc-4371-9e33-6e541b02e621)
+

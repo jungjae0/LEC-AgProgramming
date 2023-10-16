@@ -119,6 +119,32 @@ def draw_map(df, year, model):
     # plt.show()
 
 
+def draw_models_date_line(df, station, models):
+    df = df[df['지역'] == station]
+
+    plt.figure(figsize=(12, 6))
+
+    for model in models:
+        plt.plot(df['year'], df[model], label=model, linestyle='-', marker='o')
+
+    def format_date(x, pos=None):
+        month = int(x // 30) + 1
+        day = int(x % 30) + 1
+        return f'{month:02d}-{day:02d}'
+
+
+    date_format = mdates.DateFormatter('%m-%d')
+    plt.gca().yaxis.set_major_formatter(date_format)
+
+    plt.xlim(df['year'].min()-1, df['year'].max()+1)
+    plt.xlabel('Year')
+    plt.ylabel(f'예측 만개일')
+    plt.title(f'{station} 예측만개일')
+    plt.grid(True)
+    plt.legend()
+
+    plt.show()
+
 #---------- 만개일과 만개달의 평균온도 변화추이
 def draw_date_temp_line(df, station, model):
     df = df[df['지역'] == station]
@@ -126,13 +152,12 @@ def draw_date_temp_line(df, station, model):
     years = df['year'].astype(int)
     dates = df[model]
 
-    tavg = df[f'{model}_tavg']
-    # tavg = df[f'{model}_temp']
+    tavg = df[f'{model}_temp']
     plt.figure(figsize=(12, 6))
     fig, ax1 = plt.subplots()
 
     ax1.set_xlabel('Year')
-    ax1.set_ylabel('Temp', color='tab:red')
+    ax1.set_ylabel('Temperature (℃)', color='tab:red')
     line1, = ax1.plot(years, tavg, color='tab:red')
     ax1.tick_params(axis='y', labelcolor='tab:red')
     locs = np.arange(years.min(), years.max() + 1, 2)
@@ -154,12 +179,56 @@ def draw_date_temp_line(df, station, model):
     formatter = ticker.FuncFormatter(format_date)
     ax2.yaxis.set_major_formatter(formatter)
 
-    plt.legend(handles=(line1, line2), labels=('만개달 평균 기온', f'{model} 예측 만개일'), loc='upper left')
+    plt.legend(handles=(line1, line2), labels=('만개일 일평균 기온', f'{model} 예측 만개일'), loc='upper left')
     plt.yticks(np.arange(dates.min(), dates.max(), 2))
-    plt.title(f'만개달 평균 기온 vs. 만개일')
+    plt.title(f'{station} - 만개일 일평균 기온 vs. 만개일')
+
     plt.tight_layout()
     plt.show()
     # plt.savefig('./output/figs/date_tavg_line.png')
+
+def draw_date_tavg_line(df, station, model):
+    df = df[df['지역'] == station]
+
+    years = df['year'].astype(int)
+    dates = df[model]
+
+    tavg = df[f'{model}_tavg']
+    # tavg = df[f'{model}_temp']
+    plt.figure(figsize=(12, 6))
+    fig, ax1 = plt.subplots()
+
+    ax1.set_xlabel('Year')
+    ax1.set_ylabel('Temperature (℃)', color='tab:red')
+    line1, = ax1.plot(years, tavg, color='tab:red')
+    ax1.tick_params(axis='y', labelcolor='tab:red')
+    locs = np.arange(years.min(), years.max() + 1, 2)
+    labels = locs.astype(int)
+    ax1.set_xticks(locs)
+    ax1.set_xticklabels(labels, rotation=45)
+    ax1.yaxis.grid(True)
+
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Date', color='tab:blue')
+    line2, = ax2.plot(years, dates, color='tab:blue')
+    ax2.tick_params(axis='y', labelcolor='tab:blue')
+
+    def format_date(x, pos=None):
+        month = int(x // 30) + 1
+        day = int(x % 30) + 1
+        return f'{month:02d}-{day:02d}'
+
+    formatter = ticker.FuncFormatter(format_date)
+    ax2.yaxis.set_major_formatter(formatter)
+
+
+    plt.legend(handles=(line1, line2), labels=('만개월 평균 기온', f'{model} 예측 만개일'), loc='upper left')
+    plt.yticks(np.arange(dates.min(), dates.max(), 2))
+    plt.title(f'{station} - 만개월 평균 기온 vs. 만개일')
+    plt.tight_layout()
+    plt.show()
+    # plt.savefig('./output/figs/date_tavg_line.png')
+
 
 #---------- 예측 만개일 범위 표
 def table_date_station(df, year, models):
@@ -344,13 +413,13 @@ def draw_temp_line(df, year, station, weather_dir):
     lst = [year - i for i in range(2, -1, -1)]
 
     weather = pd.read_csv(os.path.join(weather_dir, f'{station}.csv'), encoding='utf-8')
-    weather['jday'] = pd.to_datetime(weather['date']).dt.day_of_year
+    weather['Day of Year'] = pd.to_datetime(weather['date']).dt.day_of_year
 
     sns.set_palette("Set1")
 
     for i, year in enumerate(lst):
         year_weather = weather[weather['year'] == year]
-        sns.lineplot(data=year_weather, x="jday", y="temp", label=f'{year}')
+        sns.lineplot(data=year_weather, x="Day of Year", y="temp", label=f'{year}')
 
     plt.title(f'{station} - {lst[0]} ~ {lst[-1]} 일평균 기온 변화 추이')
     plt.legend()
@@ -389,9 +458,12 @@ def draw_commom_temp_line(df, year, station, weather_dir):
     plt.axvline(x=stop_date, color='black', linestyle='--')
     plt.axvline(x=cul_date, color='black', linestyle='--')
 
-
+    plt.ylabel('Temperature (℃)')
+    plt.xlabel('Date')
     plt.title(f'{station} - 평년 vs. {year} 일평균기온 그래프')
     plt.legend()
+    plt.tight_layout()
+
     plt.show()
 
     # plt.savefig('./output/figs/common_current_temp_line.png')
@@ -458,44 +530,46 @@ def select_tree(tree):
         return models, maxCU, stop_CU
 
 
-def main():
-    weather_dir = './output/weather'
-
-    tree = 'apple'
-    year = 2020
-    station = '전주'
-    model = 'CD'
-
-    df = pd.read_csv(f'./output/{tree}_analysis.csv', encoding='utf-8')
-    models, maxCU, stopCU = select_tree(tree)
-
-    for column in models:
-        df[column] = pd.to_datetime(df[column]).dt.strftime('%j').astype(int)
-
-    stations = ['전주', '강릉', '광주']
-
-    # line plat > stations 만개일 변화 추이
-    draw_stations_date_line(df, stations, model)
-
-    # 지도 > 전국 연도별 만개 예측 지도
-    draw_map(df, year, model)
-
-    # line plot > 만개달의 평균 온도 + 만개일 https://highparknaturecentre.com/cherry-blossom-tracking/
-    draw_date_temp_line(df, station, model)
-
-    # line plot > 휴면타파시기-저온축적(평년 + 선택) https://fruit.nihhs.go.kr/pear/dormancy/dormancyInfo.do
-    draw_date_cr_line(df, station, year, maxCU, stopCU, weather_dir)
-
-    # 만개일 범위 표 > 전체 모델의 최대/최소 값을 범위로 https://www.nippon.com/en/japan-data/h01564/
-    table_date_station(df, year, models)
-
-    # 휴면타파 이후 ~ 10월 까지 일별 온도 변화 추이
-    draw_temp_line(df, year, station, weather_dir)
-
-    # 평년 + 선택 연도 온도 변화 추이
-    draw_commom_temp_line(df, year, station, weather_dir)
-
-if __name__ == '__main__':
-    main()
+# def main():
+#     weather_dir = './output/weather'
+#
+#     tree = 'pear'
+#     year = 2020
+#     station = '전주'
+#     model = 'CD'
+#
+#     df = pd.read_csv(f'./output/{tree}_analysis.csv', encoding='utf-8')
+#     models, maxCU, stopCU = select_tree(tree)
+#
+#     for column in models:
+#         df[column] = pd.to_datetime(df[column]).dt.strftime('%j').astype(int)
+#
+#     stations = ['전주', '강릉', '광주']
+#     draw_models_date_line(df, station, models)
+#
+#     # # line plat > stations 만개일 변화 추이
+#     # draw_stations_date_line(df, stations, model)
+#     #
+#     # # 지도 > 전국 연도별 만개 예측 지도
+#     # draw_map(df, year, model)
+#     #
+#     # # line plot > 만개달의 평균 온도 + 만개일
+#     # draw_date_temp_line(df, station, model)
+#     #
+#     # # line plot > 휴면타파시기-저온축적(평년 + 선택)
+#     # draw_date_cr_line(df, station, year, maxCU, stopCU, weather_dir)
+#     #
+#     # # 만개일 범위 표 > 전체 모델의 최대/최소 값을 범위로
+#     # table_date_station(df, year, models)
+#     #
+#     # # 휴면타파 이후 ~ 10월 까지 일별 온도 변화 추이
+#     #
+#     # draw_temp_line(df, year, station, weather_dir)
+#     #
+#     # # 평년 + 선택 연도 온도 변화 추이
+#     # draw_commom_temp_line(df, year, station, weather_dir)
+#
+# if __name__ == '__main__':
+#     main()
 
 
