@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <script
+  src="https://code.jquery.com/jquery-3.7.1.min.js"
+  integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+  crossorigin="anonymous"></script>
+
+
+    <title>Reservoir Data</title>
+</head>
+<body>
+    <h1>Reservoir Data</h1>
+
+    <form method="POST">
+        <label for="fac_name">Enter fac_name:</label>
+        <input type="text" name="fac_name" id="fac_name" required>
+        <label for="county">Enter county:</label>
+        <input type="text" name="county" id="county" required>
+        <button type="submit">Submit</button>
+    </form>
+<script>function downloadPlotCSV() {
+        $.ajax({
+            url: "/download_csv",
+            type: "post",
+            success: function(data) {
+                dataPlot = JSON.parse(data);
+                console.log(dataPlot);
+            }
+        });
+}</script>
+    <div>
+        <canvas id="lineChart" width="1200" height="1200"></canvas>
+    </div>
+        <script>
+        var chartData = "{{ chart_data }}";  // Embed the chart data as a base64 string
+
+        if (chartData) {
+            // Convert the base64 string back to binary
+            var binaryData = atob(chartData);
+
+            // Create a Blob object from the binary data
+            var blob = new Blob([new Uint8Array([...binaryData].map(char => char.charCodeAt(0)))], { type: 'image/png' });
+
+            // Create a URL for the Blob
+            var imageUrl = URL.createObjectURL(blob);
+
+            // Get the canvas element and context
+            var canvas = document.getElementById("lineChart");
+            var ctx = canvas.getContext("2d");
+
+            // Create an Image object and set its source to the Blob URL
+            var img = new Image();
+            img.src = imageUrl;
+
+            // When the Image has loaded, draw it on the canvas
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0);
+            };
+        }
+    </script>
+</body>
+</html>
