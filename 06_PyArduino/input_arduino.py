@@ -28,7 +28,7 @@ def get_aws(date):
     return temp, humid
 
 
-ser = serial.Serial('COM5', 115200)  # Replace 'COMx' with the correct serial port
+ser = serial.Serial('COM1', 115200)  # Replace 'COMx' with the correct serial port
 
 while True:
     date = datetime.now()
